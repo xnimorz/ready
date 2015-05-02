@@ -1,0 +1,29 @@
+{
+  "name": "ready",
+  "main": "ready.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/xnimorz/ready",
+  "authors": [
+    "Nikita Mostovoy <xnimor@ya.ru>"
+  ],
+  "description": "A+, ES6 promises realisation",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "A+",
+    "promises",
+    "ES6",
+    "ready"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

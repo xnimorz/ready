@@ -1,0 +1,32 @@
+{
+  "name": "ready",
+  "version": "1.0.0",
+  "description": "A+, ES6 promises realisation",
+  "main": "ready.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "promises-aplus-tests tests/adaptor"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xnimorz/ready.git"
+  },
+  "keywords": [
+    "promises",
+    "A+",
+    "ES6",
+    "ready"
+  ],
+  "author": "Nikita Mostovoy <xnimor@ya.ru>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xnimorz/ready/issues"
+  },
+  "homepage": "https://github.com/xnimorz/ready",
+  "devDependencies": {
+    "nodeunit": "^0.9.1",
+    "promises-aplus-tests": "^2.1.0"
+  }
+}
