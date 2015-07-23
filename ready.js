@@ -251,6 +251,7 @@
                     }
                 } else {
                     callbackObj.readyDefer[method](res);
+                    return;
                 }
                 callbackObj.readyDefer.resolve(res);
             };
