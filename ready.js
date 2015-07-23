@@ -186,6 +186,10 @@
             return this._addCallbacks(NONE, NONE, onMessage);
         },
 
+        'catch': function(onRejected) {
+            return this._addCallbacks(NONE, onRejected);
+        },
+
         _resolve: function(value) {
             if (this._status > 0) {
                 return;
@@ -345,22 +349,38 @@
         },
 
         all: function(iterable) {
+            var processPromise = function(i) {
+                iterable[i].then(function(value) {
+                    result[i] = value;
+                    all--;
+                    if (all === 0) {
+                        defer.resolve(result);
+                    }
+                }, function(reason) {
+                    defer.reject(reason);
+                });
+            };
             var all = 0;
             var result = [];
             var defer = new Deffered();
             for (var i in iterable) {
                 all++;
-                (function(i) {
-                    iterable[i].then(function(value) {
-                        result[i] = value;
-                        all--;
-                        if (all === 0) {
-                            defer.resolve(result);
-                        }
-                    }, function(reason) {
-                        defer.reject(reason);
-                    });
-                })(i);
+                processPromise(i);
+            }
+            return defer.promise();
+        },
+
+        race: function(iterable) {
+            var processPromise = function(i) {
+                iterable[i].then(function(value) {
+                    defer.resolve(value);
+                }, function(reason) {
+                    defer.reject(reason);
+                });
+            };
+            var defer = new Deffered();
+            for (var i in iterable) {
+                processPromise(i);
             }
             return defer.promise();
         },
@@ -411,13 +431,13 @@
             return defer.promise();
         },
 
-        resolved: function(value) {
+        resolve: function(value) {
             var defer = new Deffered();
             defer.resolve(value);
             return defer.promise();
         },
 
-        rejected: function(reason) {
+        reject: function(reason) {
             var defer = new Deffered();
             defer.reject(reason);
             return defer.promise();

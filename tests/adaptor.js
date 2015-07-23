@@ -1,8 +1,8 @@
 var ready = require('../ready');
 
 module.exports = {
-    resolved: ready.resolved.bind(ready),
-    rejected: ready.rejected.bind(ready),
+    resolved: ready.resolve.bind(ready),
+    rejected: ready.reject.bind(ready),
     deferred: function() {
         var defer = ready.defer();
         return {
