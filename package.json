@@ -2,11 +2,12 @@
   "name": "ready",
   "version": "1.0.0",
   "description": "A+, ES6 promises realisation",
-  "main": "ready.js",
+  "main": "ready.min.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
+    "build": "gulp build",
     "test": "promises-aplus-tests tests/adaptor"
   },
   "repository": {
@@ -26,6 +27,9 @@
   },
   "homepage": "https://github.com/xnimorz/ready",
   "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.2.0",
     "nodeunit": "^0.9.1",
     "promises-aplus-tests": "^2.1.0"
   }

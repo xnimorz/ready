@@ -1,6 +1,6 @@
 {
   "name": "ready",
-  "main": "ready.js",
+  "main": "ready.min.js",
   "version": "1.0.0",
   "homepage": "https://github.com/xnimorz/ready",
   "authors": [
