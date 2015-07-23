@@ -26,16 +26,16 @@
         };
 
         // ie10, nodejs >= 0.10
-        if (typeof global.setImmediate === 'function') {
+        if (typeof setImmediate === 'function') {
             return function(fn) {
-                addFunction(fn) || global.setImmediate(callList);
+                addFunction(fn) || setImmediate(callList);
             };
         }
 
         // nodejs < 0.10
-        if (typeof global.process === 'object' && global.process.nextTick) {
+        if (typeof process === 'object' && process.nextTick) {
             return function(fn) {
-                addFunction(fn) || global.process.nextTick(callList);
+                addFunction(fn) || process.nextTick(callList);
             };
         }
 
@@ -77,7 +77,7 @@
         }
 
         return function(fn) {
-            addFunction(fn) || global.setTimeout(callList, 0);
+            addFunction(fn) || setTimeout(callList, 0);
         };
 
     })();
@@ -192,10 +192,10 @@
             }
 
             if (value === this) {
-                throw new TypeError('Can\'t resolve promise with itself');
+                this._reject(new TypeError('Can\'t resolve promise with itself'));
             }
 
-            if (typeof value === 'object' || typeof value === 'function') {
+            if (value && (typeof value === 'object' || typeof value === 'function')) {
 
                 // check value is ready promise
                 if (value._type && value._type === READY_PROMISE) {
@@ -217,12 +217,32 @@
                     this._reject(e);
                     return;
                 }
-
                 if (typeof then === 'function') {
+                    var self = this;
+                    var isResolving = false;
                     try {
-                        value.then(this._resolve.bind(this), this._reject.bind(this));
+                        then.call(
+                            value,
+                            function(value) {
+                                if (isResolving) {
+                                    return;
+                                }
+
+                                isResolving = true;
+                                self._resolve(value);
+                            },
+                            function(reason) {
+                                if (isResolving) {
+                                    return;
+                                }
+
+                                isResolving = true;
+                                self._reject(reason);
+                            });
                     } catch (e) {
-                        this._reject(e);
+                        if (!isResolving) {
+                            this._reject(e);
+                        }
                     }
                     return;
                 }
@@ -264,9 +284,13 @@
                         callbackObj.readyDefer.reject(e);
                         return;
                     }
+                } else {
+                    callbackObj.readyDefer[method](res);
                 }
                 callbackObj.readyDefer.resolve(res);
             };
+
+            var method = this._status === STATUS.FULFILLED ? 'resolve' : 'reject';
 
             if (callbacks) {
                 asyncCall(function() {
