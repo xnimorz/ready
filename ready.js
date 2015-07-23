@@ -90,6 +90,8 @@
         this._value = NONE;
         this._status = STATUS.PENDING;
         this._type = READY_PROMISE;
+        this._resolveStack = [];
+        this._rejectStack = [];
 
         if (typeof executor === 'function') {
             var self = this;
@@ -99,16 +101,13 @@
                 },
                 function(value) {
                     self.reject(value);
-                },
-                function(value) {
-                    self.notify(value);
                 }
             );
         }
     }
 
     Promise.prototype = {
-        _addCallbacks: function(onFulFilled, onRejected, onMessage) {
+        _addCallbacks: function(onFulFilled, onRejected) {
             var defer = new Deffered();
             // inline code for better performance
             // fulfill
@@ -118,18 +117,11 @@
             };
 
             if (this._status === STATUS.FULFILLED) {
-                this._callCallbacks(FulFilled, this._value);
+                this._callCallbacks([FulFilled], this._value);
                 return defer.promise();
             }
 
-            if (!this._resolveStack) {
-                this._resolveStack = FulFilled;
-            } else {
-                if (!this._resolveStack.length) {
-                    this._resolveStack = [this._resolveStack];
-                }
-                this._resolveStack.push(FulFilled);
-            }
+            this._resolveStack.push(FulFilled);
 
             // reject
             var rejected = {
@@ -138,40 +130,17 @@
             };
 
             if (this._status === STATUS.REJECTED) {
-                this._callCallbacks(rejected, this._value);
+                this._callCallbacks([rejected], this._value);
                 return defer.promise();
             }
 
-            if (!this._rejectStack) {
-                this._rejectStack = rejected;
-            } else {
-                if (!this._rejectStack.length) {
-                    this._rejectStack = [this._rejectStack];
-                }
-                this._rejectStack.push(rejected);
-            }
-
-            // message
-
-            var message = {
-                callback: typeof onMessage === 'function' ? onMessage : NONE,
-                readyDefer: defer
-            };
-
-            if (!this._onMessage) {
-                this._messageStack = message;
-            } else {
-                if (!this._messageStack.length) {
-                    this._messageStack = [this._messageStack];
-                }
-                this._messageStack.push(message);
-            }
+            this._rejectStack.push(rejected);
 
             return defer.promise();
         },
 
-        then: function(onFulFilled, onRejected, onMessage) {
-            return this._addCallbacks(onFulFilled, onRejected, onMessage);
+        then: function(onFulFilled, onRejected) {
+            return this._addCallbacks(onFulFilled, onRejected);
         },
 
         done: function(onFulFilled) {
@@ -180,10 +149,6 @@
 
         fail: function(onRejected) {
             return this._addCallbacks(NONE, onRejected);
-        },
-
-        notify: function(onMessage) {
-            return this._addCallbacks(NONE, NONE, onMessage);
         },
 
         'catch': function(onRejected) {
@@ -256,8 +221,8 @@
             this._status = STATUS.FULFILLED;
             this._callCallbacks(this._resolveStack, value);
 
-            this._resolveStack = NONE;
-            this._rejectStack = NONE;
+            this._resolveStack = [];
+            this._rejectStack = [];
         },
 
         _reject: function(reason) {
@@ -269,12 +234,8 @@
             this._status = STATUS.REJECTED;
             this._callCallbacks(this._rejectStack, reason);
 
-            this._resolveStack = NONE;
-            this._rejectStack = NONE;
-        },
-
-        _notify: function(value) {
-            this._callCallbacks(this._messageStack, value);
+            this._resolveStack = [];
+            this._rejectStack = [];
         },
 
         _callCallbacks: function(callbacks, value) {
@@ -296,13 +257,8 @@
 
             var method = this._status === STATUS.FULFILLED ? 'resolve' : 'reject';
 
-            if (callbacks) {
+            if (callbacks && callbacks.length) {
                 asyncCall(function() {
-                    if (!callbacks.length) {
-                        processFunction(callbacks);
-                        return;
-                    }
-
                     var length = callbacks.length;
                     for (var i = 0; i < length; i++) {
                         processFunction(callbacks[i]);
@@ -329,10 +285,6 @@
 
         reject: function(value) {
             this._promise._reject(value);
-        },
-
-        notify: function(value) {
-            this._promise._notify(value);
         },
 
         constructor: Deffered
