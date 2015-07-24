@@ -155,6 +155,18 @@
             return this._addCallbacks(NONE, onRejected);
         },
 
+        nodeify: function(callback, ctx) {
+            if (typeof callback !== 'function') {
+                return this;
+            }
+
+            this.then(function(value) {
+                callback.call(ctx, null, value);
+            }, function(reason) {
+                callback.call(ctx, reason);
+            });
+        },
+
         _resolve: function(value) {
             if (this._status > 0) {
                 return;
@@ -394,6 +406,32 @@
             var defer = new Deffered();
             defer.reject(reason);
             return defer.promise();
+        },
+
+        denodeify: function(fn, argumentCount) {
+            argumentCount = argumentCount || Infinity;
+            return function () {
+                var self = this;
+                var args = Array.prototype.slice.call(arguments);
+                var defer = this.defer();
+                while (args.length && args.length > argumentCount) {
+                    args.pop();
+                }
+                args.push(function (err, res) {
+                    if (err) {
+                        defer.reject(err);
+                    } else {
+                        defer.resolve(res);
+                    }
+                });
+                var res = fn.apply(self, args);
+
+                if (res && (typeof res === 'object' || typeof res === 'function') && typeof res.then === 'function') {
+                    defer.resolve(res);
+                }
+
+                return defer.promise();
+            };
         }
     };
 
