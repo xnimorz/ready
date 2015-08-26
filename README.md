@@ -1,8 +1,8 @@
 ## Ready
 
-Ready is a Promises/A++ implementation with supporting ES6 Promises specification.
+Ready is a Promises/A+ implementation with supporting ES6 Promises specification.
 
-[Promises/A++ specification](https://promisesaplus.com/)
+[Promises/A+ specification](https://promisesaplus.com/)
 
 
 ### Installing
