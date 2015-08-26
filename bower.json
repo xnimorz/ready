@@ -1,5 +1,5 @@
 {
-  "name": "ready",
+  "name": "ready-promises",
   "main": "ready.min.js",
   "version": "1.0.0",
   "homepage": "https://github.com/xnimorz/ready",

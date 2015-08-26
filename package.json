@@ -1,5 +1,5 @@
 {
-  "name": "ready",
+  "name": "ready-promises",
   "version": "1.0.0",
   "description": "A+, ES6 promises realisation",
   "main": "ready.min.js",
