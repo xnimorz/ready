@@ -1,6 +1,6 @@
 {
   "name": "ready-promises",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A+, ES6 promises realisation",
   "main": "ready.js",
   "directories": {
