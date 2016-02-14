@@ -97,10 +97,10 @@
             var self = this;
             executor(
                 function(value) {
-                    self.resolve(value);
+                    self._resolve(value);
                 },
                 function(value) {
-                    self.reject(value);
+                    self._reject(value);
                 }
             );
         }
