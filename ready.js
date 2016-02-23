@@ -83,7 +83,7 @@
     })();
 
     /**
-     * Promises/A+ implementation
+     * Promises/A+ \ ES6 implementation
      * @constructor
      */
     function Promise(executor) {
@@ -93,7 +93,7 @@
         this._resolveStack = [];
         this._rejectStack = [];
 
-        if (typeof executor === 'function') {
+        if (executor) {
             var self = this;
             executor(
                 function(value) {
@@ -108,17 +108,23 @@
 
     Promise.prototype = {
         _addCallbacks: function(onFulFilled, onRejected) {
-            var defer = new Deffered();
+            var resolve;
+            var reject;
+            var promise = new Promise(function(_resolve, _reject) {
+                resolve = _resolve;
+                reject = _reject;
+            });
             // inline code for better performance
             // fulfill
             var FulFilled = {
                 callback: typeof onFulFilled === 'function' ? onFulFilled : NONE,
-                readyDefer: defer
+                resolve: resolve,
+                reject: reject
             };
 
             if (this._status === STATUS.FULFILLED) {
                 this._callCallbacks([FulFilled], this._value);
-                return defer.promise();
+                return promise;
             }
 
             this._resolveStack.push(FulFilled);
@@ -126,17 +132,18 @@
             // reject
             var rejected = {
                 callback: typeof onRejected === 'function' ? onRejected : NONE,
-                readyDefer: defer
+                resolve: resolve,
+                reject: reject
             };
 
             if (this._status === STATUS.REJECTED) {
                 this._callCallbacks([rejected], this._value);
-                return defer.promise();
+                return promise;
             }
 
             this._rejectStack.push(rejected);
 
-            return defer.promise();
+            return promise;
         },
 
         then: function(onFulFilled, onRejected) {
@@ -258,14 +265,14 @@
                         var callback = callbackObj.callback;
                         res = callback(value);
                     } catch (e) {
-                        callbackObj.readyDefer.reject(e);
+                        callbackObj.reject(e);
                         return;
                     }
                 } else {
-                    callbackObj.readyDefer[method](res);
+                    callbackObj[method](res);
                     return;
                 }
-                callbackObj.readyDefer.resolve(res);
+                callbackObj.resolve(res);
             };
 
             var method = this._status === STATUS.FULFILLED ? 'resolve' : 'reject';
@@ -281,6 +288,55 @@
         },
 
         constructor: Promise
+    };
+
+    Promise.all = function(iterable) {
+        var processPromise = function(i) {
+            iterable[i].then(function(value) {
+                result[i] = value;
+                all--;
+                if (all === 0) {
+                    defer.resolve(result);
+                }
+            }, function(reason) {
+                defer.reject(reason);
+            });
+        };
+        var all = 0;
+        var result = [];
+        var defer = new Deffered();
+        for (var i in iterable) {
+            all++;
+            processPromise(i);
+        }
+        return defer.promise();
+    };
+
+    Promise.race = function(iterable) {
+        var processPromise = function(i) {
+            iterable[i].then(function(value) {
+                defer.resolve(value);
+            }, function(reason) {
+                defer.reject(reason);
+            });
+        };
+        var defer = new Deffered();
+        for (var i in iterable) {
+            processPromise(i);
+        }
+        return defer.promise();
+    };
+
+    Promise.resolve = function(value) {
+        var defer = new Deffered();
+        defer.resolve(value);
+        return defer.promise();
+    };
+
+    Promise.reject = function(reason) {
+        var defer = new Deffered();
+        defer.reject(reason);
+        return defer.promise();
     };
 
     function Deffered() {
@@ -313,42 +369,9 @@
             return new Deffered();
         },
 
-        all: function(iterable) {
-            var processPromise = function(i) {
-                iterable[i].then(function(value) {
-                    result[i] = value;
-                    all--;
-                    if (all === 0) {
-                        defer.resolve(result);
-                    }
-                }, function(reason) {
-                    defer.reject(reason);
-                });
-            };
-            var all = 0;
-            var result = [];
-            var defer = new Deffered();
-            for (var i in iterable) {
-                all++;
-                processPromise(i);
-            }
-            return defer.promise();
-        },
+        all: Promise.all,
 
-        race: function(iterable) {
-            var processPromise = function(i) {
-                iterable[i].then(function(value) {
-                    defer.resolve(value);
-                }, function(reason) {
-                    defer.reject(reason);
-                });
-            };
-            var defer = new Deffered();
-            for (var i in iterable) {
-                processPromise(i);
-            }
-            return defer.promise();
-        },
+        race: Promise.race,
 
         spead: function() {
             var addCallbacks = function(promise, i) {
@@ -396,17 +419,9 @@
             return defer.promise();
         },
 
-        resolve: function(value) {
-            var defer = new Deffered();
-            defer.resolve(value);
-            return defer.promise();
-        },
+        resolve: Promise.resolve,
 
-        reject: function(reason) {
-            var defer = new Deffered();
-            defer.reject(reason);
-            return defer.promise();
-        },
+        reject: Promise.reject,
 
         denodeify: function(fn, argumentCount) {
             argumentCount = argumentCount || Infinity;
@@ -432,6 +447,24 @@
 
                 return defer.promise();
             };
+        },
+
+        polyfill: function(override) {
+            if (!override) {
+                var globalObj = window || global;
+                if(
+                    !!globalObj.Promise &&
+                    globalObj.Promise.toString().indexOf("[native code]") !== -1
+                ){
+                    return;
+                }
+            }
+
+            if (window) {
+                window.Promise = Promise;
+            } else {
+                global.Promise = Promise;
+            }
         }
     };
 
