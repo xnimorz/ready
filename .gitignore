@@ -1,2 +1,4 @@
 .idea
 npm-debut.log
+node-modules
+bower_components
