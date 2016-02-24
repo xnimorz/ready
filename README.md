@@ -71,6 +71,28 @@ async().then(
 
 ```
 
+#### Using as polyfill
+
+Polyfill Promise if there is no another solution (native or other libraries):
+
+```
+ready.polyfill();
+/* ...code... */
+new Promise(function(resolve, reject) {
+    // you can call resolve or reject callbacks here
+}).then(function onResolve() {}, function onReject() {});
+```
+
+Polyfill Promise:
+
+```
+ready.polyfill(true);
+/* ...code... */
+new Promise(function(resolve, reject) {
+    // you can call resolve or reject callbacks here
+}).then(function onResolve() {}, function onReject() {});
+```
+
 ## Description
 
 ### ready methods
@@ -122,4 +144,10 @@ Deferred object has 3 methods:
 
 ```nodeify``` - convert promised code to use node style callbacks. If no callback is provided it will just return the original promise.
 
+```all(iterable)``` - returns a promise that resolves when all of the promises in the iterable argument have resolved.
 
+```race(iterable)``` - returns a promise that resolves or rejects as soon as one of the promises in the iterable resolves or rejects, with the value or reason from that promise.
+
+```reject(reason)``` - returns a Promise object that is rejected with the given reason.
+
+```resolve(value)``` - returns a Promise object that is resolved with the given value.
