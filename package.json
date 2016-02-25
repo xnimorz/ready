@@ -1,6 +1,6 @@
 {
   "name": "ready-promises",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A+, ES6 promises realisation",
   "main": "ready.js",
   "directories": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "gulp build",
-    "test": "promises-aplus-tests tests/adaptor"
+    "test": "promises-aplus-tests tests/adaptor",
+    "benchmark": "node benchmark/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,9 @@
     "promises",
     "A+",
     "ES6",
-    "ready"
+    "ready",
+    "ES6-polyfill",
+    "polyfill"
   ],
   "author": "Nikita Mostovoy <xnimor@ya.ru>",
   "license": "ISC",

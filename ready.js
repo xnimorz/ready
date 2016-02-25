@@ -305,9 +305,17 @@
         var all = 0;
         var result = [];
         var defer = new Deffered();
-        for (var i in iterable) {
-            all++;
-            processPromise(i);
+        var i;
+        if (iterable instanceof Array) {
+            for (i = 0; i < iterable.length; i++) {
+                all++;
+                processPromise(i);
+            }
+        } else {
+            for (i in iterable) {
+                all++;
+                processPromise(i);
+            }
         }
         return defer.promise();
     };
@@ -321,22 +329,25 @@
             });
         };
         var defer = new Deffered();
-        for (var i in iterable) {
-            processPromise(i);
+        var i;
+        if (iterable instanceof Array) {
+            for (i = 0; i < iterable.length; i++) {
+                processPromise(i);
+            }
+        } else {
+            for (var i in iterable) {
+                processPromise(i);
+            }
         }
         return defer.promise();
     };
 
     Promise.resolve = function(value) {
-        var defer = new Deffered();
-        defer.resolve(value);
-        return defer.promise();
+        return new Promise(function(resolve) {resolve(value)});
     };
 
     Promise.reject = function(reason) {
-        var defer = new Deffered();
-        defer.reject(reason);
-        return defer.promise();
+        return new Promise(function(_, reject) {reject(reason)});
     };
 
     function Deffered() {
