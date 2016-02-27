@@ -33,6 +33,7 @@
     "benchmark": "^2.1.0",
     "bluebird": "^3.3.1",
     "cliff": "^0.1.10",
+    "e2": "^1.0.2",
     "es6-promise": "^3.1.2",
     "gulp": "^3.9.0",
     "gulp-rename": "^1.2.2",
